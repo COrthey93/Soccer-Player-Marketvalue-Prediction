@@ -3,11 +3,13 @@
 # install.packages("randomForest")
 # install.packages("e1071")
 # install.packages("doParallel")
+# install.packages("ranger")
 
 library(caret)
 library(randomForest)
 library(e1071)
 library(doParallel)
+library(ranger)
 set.seed(80085)
 registerDoParallel(makePSOCKcluster(2))
 
@@ -32,12 +34,14 @@ plot(df$age, df$value_eur)
 ##    4.2 Boxplots
 for(i in 1:ncol(df)) {
   boxplot(df[,i], main=names(df)[i])
+  
 }
 
 ###   5. TRAINING ML MODEL
 ##    5.1 Specification of Metrics
 control     = trainControl(method = "cv", number = 10)
-metric      = "Rsquared"
+metric_lm   = "Rsquared"
+metric_rf   = "RMSE"
 
 ##    5.2 Train/Test Split
 train_Index = createDataPartition(df$international_reputation, p = .8,
@@ -50,7 +54,7 @@ test        = df[-train_Index,]
 ##        How does the overall skill level influence the value of the players?
 
 #     5.3.1 Linear Model 
-lm.1        = train(value_eur ~ ., data = train, method = "lm", trControl = control, metric = metric)
+lm.1        = train(value_eur ~ ., data = train, method = "lm", trControl = control, metric = metric_lm)
 summary(lm.1)
 
 lm.1        = lm(value_eur ~ ., data = df)
@@ -61,13 +65,18 @@ glm.1       = glm(value_eur ~ ., data = df)
 summary(glm.1)
 
 ##    5.4 Decision Tree Model
-rf.1        = train(value_eur ~ ., data = train, method = "rf", trControl = control, metric = metric)
+rf.1        = train(value_eur ~ ., data = train, method = "ranger", trControl = control, metric = metric_rf)
 summary(rf.1)
 #     5.4.1 Feature Importance
 
 ###   6. MEASUREMENTS
-results     = resamples(list(lm = lm.1, rf = rf.1))
+results     = resamples(list('Linear Regression' = lm.1, 'Random Forest' = rf.1))
 summary(results)
 
-###   7. PREDICTION
+###   7. MODEL SAVING / MODEL LOAD
+saveRDS(object = rf.1, file = "models/rf_model.rds")
+rf.1 <- readRDS("models/rf_model.rds")
 
+###   8. PREDICTIONS
+predictions = predict(rf.1, test)
+confusionMatrix(predictions, test$value_eur)
