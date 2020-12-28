@@ -9,7 +9,7 @@ library(randomForest)
 library(e1071)
 library(doParallel)
 set.seed(80085)
-registerDoParallel(makePSOCKcluster(8))
+registerDoParallel(makePSOCKcluster(2))
 
 ###   2. LOAD & PREPARE DATA
 players_21  <- read.csv("data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")
