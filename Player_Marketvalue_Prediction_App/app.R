@@ -1,7 +1,17 @@
+# WEB APP LIBRARIES
 library(shiny)
+library(ggplot2)
 library(shinydashboard)
 library(fmsb)
 
+# 0.    SOURCE FILES 
+# 0.1   DATA PREPARATION
+source("../data/data_preparation.R")
+
+# 1.    IMPORT TRAINED ML MODELS
+ml_model <- readRDS("../models/rf_model.rds")
+
+# 2.    DEFINE WEB APP UI
 ui <- fluidPage(
     titlePanel("Soccer Player Market Value Prediction Tool"),
     sidebarLayout(
@@ -20,12 +30,12 @@ ui <- fluidPage(
         ),
         mainPanel(
            valueBoxOutput("marketvalue_box"),
-           plotOutput("barplot"),
-           plotOutput("spiderplot")
+           plotOutput("barplot")
         )
     )
 )
 
+# 3.    DEFINE WEB APP SERVER
 server <- function(input, output) {
 
     boxplot_dataframe <- reactive({
@@ -34,17 +44,24 @@ server <- function(input, output) {
     }) 
     
     prediction_dataframe <- reactive({
-        data.frame(age = input$age, potential = input$potential, international_reputation = input$international_reputation,
-                   overall = input$overall, skill_moves = input$skill_moves, pace = input$pace, shooting = input$shooting,
-                   passing = input$passing, dribbling = input$dribbling, defending = input$defending, physic = input$physic)
+        data.frame(age = as.integer(req(input$age)), 
+                   potential = as.integer(req(input$potential)), 
+                   international_reputation = as.integer(req(input$international_reputation)),
+                   overall = as.integer(req(input$overall)), 
+                   skill_moves = as.integer(req(input$skill_moves)), 
+                   pace = as.integer(req(input$pace)), 
+                   shooting = as.integer(req(input$shooting)),
+                   passing = as.integer(req(input$passing)), 
+                   dribbling = as.integer(req(input$dribbling)), 
+                   defending = as.integer(req(input$defending)), 
+                   physic = as.integer(req(input$physic)))
     })
     
     output$marketvalue_box <- renderValueBox({
         df <- prediction_dataframe()
-        readRDS("../models/rf_model.rds")
-        df['market_value_prediction'] <- predict(rf.1, df)
+        df['market_value_prediction'] <- predict(ml_model, df)
         
-        valueBox(value = paste0(round(df$market_value_prediction,2), "\u20AC"),
+        valueBox(value = paste0(prettyNum(round(df$market_value_prediction,2), big.mark = ","), "\u20AC"),
                  subtitle = "Predicted Player Market Value",
                  icon = icon("euro"))
     })
@@ -56,11 +73,7 @@ server <- function(input, output) {
             #+coord_flip() 
             #+coord_cartesian(ylim = c(0,100))
     }) 
-    
-    output$spiderplot <- renderPlot({
-        df <- prediction_dataframe()
-        radarchart(df)
-    })
 }
 
+# 4.    RUN WEB APP
 shinyApp(ui = ui, server = server)
