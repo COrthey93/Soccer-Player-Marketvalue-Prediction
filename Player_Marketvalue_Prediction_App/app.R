@@ -2,6 +2,8 @@ library(shiny)
 library(shinydashboard)
 library(fmsb)
 
+ml_model <- readRDS("../models/rf_model.rds")
+
 ui <- fluidPage(
     titlePanel("Soccer Player Market Value Prediction Tool"),
     sidebarLayout(
@@ -20,8 +22,7 @@ ui <- fluidPage(
         ),
         mainPanel(
            valueBoxOutput("marketvalue_box"),
-           plotOutput("barplot"),
-           plotOutput("spiderplot")
+           plotOutput("barplot")
         )
     )
 )
@@ -42,7 +43,7 @@ server <- function(input, output) {
     output$marketvalue_box <- renderValueBox({
         df <- prediction_dataframe()
         readRDS("../models/rf_model.rds")
-        df['market_value_prediction'] <- predict(rf.1, df)
+        df['market_value_prediction'] <- predict(ml_model, df)
         
         valueBox(value = paste0(round(df$market_value_prediction,2), "\u20AC"),
                  subtitle = "Predicted Player Market Value",
@@ -56,11 +57,6 @@ server <- function(input, output) {
             #+coord_flip() 
             #+coord_cartesian(ylim = c(0,100))
     }) 
-    
-    output$spiderplot <- renderPlot({
-        df <- prediction_dataframe()
-        radarchart(df)
-    })
 }
 
 shinyApp(ui = ui, server = server)

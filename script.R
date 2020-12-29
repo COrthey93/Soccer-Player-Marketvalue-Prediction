@@ -89,22 +89,3 @@ result['percent_deviation'] <- (result$deviation / result$value_eur)*100
 
 hist(result$percent_deviation)
 boxplot(result$percent_deviation)
-
-##    8.2 Prediction on own dataframe
-age_input <- as.integer(readline(prompt = "Enter age (in years): "))
-potential_input <- as.integer(readline(prompt = "Enter development potential (0-100): "))
-intrep_input <- as.integer(readline(prompt = "Enter international reputation (0-5): "))
-overall_input <- as.integer(readline(prompt = "Enter overall skill (0-100): "))
-skillmoves_input <- as.integer(readline(prompt = "Enter skill moves (0-5): "))
-pace_input <- as.integer(readline(prompt = "Enter pace skill (0-100): "))
-shooting_input <- as.integer(readline(prompt = "Enter shooting skill (0-100): "))
-passing_input <- as.integer(readline(prompt = "Enter passing skill (0-100): "))
-dribbling_input <- as.integer(readline(prompt = "Enter dribbling skill (0-100): "))
-defending_input <- as.integer(readline(prompt = "Enter defending skill (0-100): "))
-physic_input <- as.integer(readline(prompt = "Enter phyical skills (0-100): "))
-
-performance_df <- data.frame(age = age_input, potential = potential_input, international_reputation = intrep_input, overall = overall_input, skill_moves = skillmoves_input,
-                             pace = pace_input, shooting = shooting_input, passing = passing_input, dribbling = dribbling_input,
-                             defending = defending_input, physic = physic_input)
-
-performance_df['predicted_value'] <- predict(rf.1, performance_df)
