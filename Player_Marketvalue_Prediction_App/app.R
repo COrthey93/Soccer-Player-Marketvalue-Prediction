@@ -3,6 +3,7 @@ library(shiny)
 library(ggplot2)
 library(shinydashboard)
 library(fmsb)
+library(shinythemes)
 
 # 0.    SOURCE FILES 
 # 0.1   DATA PREPARATION
@@ -12,50 +13,100 @@ source("../data/data_preparation.R")
 ml_model <- readRDS("../models/rf_model.rds")
 
 # 2.    DEFINE WEB APP UI
-ui <- dashboardPage(
-    dashboardHeader(),
-    dashboardSidebar(
-                numericInput("age", "Age (in years):", min = 1, max = 100, value = 28),
-                numericInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
-                numericInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
-                numericInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
-                numericInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
-                numericInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
-                numericInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89),
-                numericInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
-                numericInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
-                numericInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
-                numericInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
-    ),
-    dashboardBody(
-        fluidRow(
-            box(title = "Predicted Player Market Value", status = "primary", solidHeader = T, valueBoxOutput("marketvalue_box"))
+
+# VERSION 1 - Numeric Input (also accepts value off limits)
+# ui <- dashboardPage(
+#     dashboardHeader(),
+#     dashboardSidebar(
+#         sliderInput("age", "Age (in years):", min = 1, max = 100, value = 28),
+#         sliderInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
+#         sliderInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
+#         sliderInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
+#         sliderInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
+#         sliderInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
+#         sliderInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89),
+#         sliderInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
+#         sliderInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
+#         sliderInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
+#         sliderInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
+#     ),
+#     dashboardBody(
+#         fluidRow(
+#             box(title = "Predicted Player Market Value", status = "primary", solidHeader = T, valueBoxOutput("marketvalue_box"))
+#         ),
+#         fluidRow(
+#             box(title = "Player Skill Numbers", status = "primary", solidHeader = T, plotOutput("barplot"))
+#         )
+#     )
+# )
+
+# VERSION 2 - Shiny Framework
+ui <- fluidPage(
+    theme = shinytheme("united"),
+    title = "Soccer Player Market Value Prediction Tool",
+    h3("Soccer Player Market Value Prediction Tool"),
+    fluidRow(
+        column(
+            h3("Player Attributes"),
+            width = 8,
+            column(
+                width = 4,
+                sliderInput("age", "Age (in years):", min = 1, max = 100, value = 28),
+                sliderInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
+                sliderInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2)
+            ),
+            column(
+                width = 4,
+                sliderInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
+                sliderInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
+                sliderInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
+                sliderInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89)
+            ),
+            column(
+                width = 4,
+                sliderInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
+                sliderInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
+                sliderInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
+                sliderInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
+            ),
         ),
-        fluidRow(
-            box(title = "Player Skill Numbers", status = "primary", solidHeader = T, plotOutput("barplot"))
+        column(
+            h3("Predicted Player Market Values"),
+            width = 4,
+            valueBoxOutput("marketvalue_box")  
+        )
+    ),
+    fluidRow(
+        column(
+            h3("Player Attribute Graphic"),
+            width = 12,
+            #align = "center",
+            plotOutput("barplot")   
         )
     )
 )
 
+
+# VERSION 3 - Shiny Framework (not that fancy layout...)
 # ui <- fluidPage(
 #     titlePanel("Soccer Player Market Value Prediction Tool"),
-#     sidebarLayout(
-#         sidebarPanel(
-#             numericInput("age", "Age (in years):", min = 1, max = 100, value = 28),
-#             numericInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
-#             numericInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
-#             numericInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
-#             numericInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
-#             numericInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
-#             numericInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89),
-#             numericInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
-#             numericInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
-#             numericInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
-#             numericInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
+#     fluidRow(
+#         column(width = 4,
+#                numericInput("age", "Age (in years):", min = 1, max = 100, value = 28),
+#                numericInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
+#                numericInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
+#                numericInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
+#                numericInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
+#                numericInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
+#                numericInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89),
+#                numericInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
+#                numericInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
+#                numericInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
+#                numericInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)  
 #         ),
-#         mainPanel(
-#            valueBoxOutput("marketvalue_box"),
-#            plotOutput("barplot")
+#         column(width = 8,
+#                valueBoxOutput("marketvalue_box"),
+#                plotOutput("barplot")
 #         )
 #     )
 # )
@@ -87,8 +138,7 @@ server <- function(input, output) {
         df['market_value_prediction'] <- predict(ml_model, df)
         
         valueBox(value = paste0(prettyNum(round(df$market_value_prediction,2), big.mark = ","), "\u20AC"),
-                 subtitle = "Predicted Player Market Value",
-                 icon = icon("euro"))
+                 subtitle = "Predicted Player Market Value")
     })
     
     output$barplot <- renderPlot({
