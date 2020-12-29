@@ -1,4 +1,5 @@
 library(shiny)
+library(shinydashboard)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -16,7 +17,7 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-           tableOutput("dataset"),
+           valueBoxOutput("marketvalue_box"),
            plotOutput("barplot")
         )
     )
@@ -25,17 +26,31 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    datasetInput <- reactive({
+    boxplot_dataframe <- reactive({
         data.frame(metric = c("age", "potential", "international_reputation"),
                    value = as.integer(c(input$age, input$potential, input$international_reputation)))
     }) 
     
-    output$dataset <- renderTable(datasetInput())
+    prediction_dataframe <- reactive({
+        data.frame(age = input$age, potential = input$potential, international_reputation = input$international_reputation)
+    })
+    
+    output$marketvalue_box <- renderValueBox({
+        df <- prediction_dataframe()
+        readRDS("../models/rf_model.rds")
+        df['market_value_prediction'] <- predict(rf.1, df)
+        
+        valueBox(value = df$market_value_prediction,
+                 subtitle = "Predicted Player Market Value",
+                 icon = icon("euro"))
+    })
     
     output$barplot <- renderPlot({
-        df <- datasetInput()
-        ggplot2::ggplot(df, aes(y = metric)) +
-            geom_bar()
+        df <- boxplot_dataframe()
+        ggplot2::ggplot(df, aes(x = metric, y = value)) +
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_flip() +
+            coord_cartesian(ylim = c(0,100))
     }) 
 }
 
