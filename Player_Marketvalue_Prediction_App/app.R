@@ -35,17 +35,24 @@ server <- function(input, output) {
     }) 
     
     prediction_dataframe <- reactive({
-        data.frame(age = input$age, potential = input$potential, international_reputation = input$international_reputation,
-                   overall = input$overall, skill_moves = input$skill_moves, pace = input$pace, shooting = input$shooting,
-                   passing = input$passing, dribbling = input$dribbling, defending = input$defending, physic = input$physic)
+        data.frame(age = as.integer(req(input$age)), 
+                   potential = as.integer(req(input$potential)), 
+                   international_reputation = as.integer(req(input$international_reputation)),
+                   overall = as.integer(req(input$overall)), 
+                   skill_moves = as.integer(req(input$skill_moves)), 
+                   pace = as.integer(req(input$pace)), 
+                   shooting = as.integer(req(input$shooting)),
+                   passing = as.integer(req(input$passing)), 
+                   dribbling = as.integer(req(input$dribbling)), 
+                   defending = as.integer(req(input$defending)), 
+                   physic = as.integer(req(input$physic)))
     })
     
     output$marketvalue_box <- renderValueBox({
         df <- prediction_dataframe()
-        readRDS("../models/rf_model.rds")
         df['market_value_prediction'] <- predict(ml_model, df)
         
-        valueBox(value = paste0(round(df$market_value_prediction,2), "\u20AC"),
+        valueBox(value = paste0(prettyNum(round(df$market_value_prediction,2), big.mark = ","), "\u20AC"),
                  subtitle = "Predicted Player Market Value",
                  icon = icon("euro"))
     })
