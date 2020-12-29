@@ -13,13 +13,8 @@ ml_model <- readRDS("../models/rf_model.rds")
 
 # 2.    DEFINE WEB APP UI
 ui <- dashboardPage(
-    dashboardHeader(
-        title = "Soccer Player Market Value Prediction Tool"
-    ),
+    dashboardHeader(),
     dashboardSidebar(
-        sidebarMenu(
-            id = "id_sidebar",
-            conditionalPanel(
                 numericInput("age", "Age (in years):", min = 1, max = 100, value = 28),
                 numericInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
                 numericInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
@@ -31,13 +26,13 @@ ui <- dashboardPage(
                 numericInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
                 numericInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
                 numericInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
-            )
-        )
     ),
     dashboardBody(
         fluidRow(
-            box(valueBoxOutput("marketvalue_box")),
-            box(plotOutput("barplot"))
+            box(title = "Predicted Player Market Value", status = "primary", solidHeader = T, valueBoxOutput("marketvalue_box"))
+        ),
+        fluidRow(
+            box(title = "Player Skill Numbers", status = "primary", solidHeader = T, plotOutput("barplot"))
         )
     )
 )
