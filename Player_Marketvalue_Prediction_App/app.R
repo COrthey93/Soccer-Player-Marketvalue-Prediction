@@ -12,28 +12,58 @@ source("../data/data_preparation.R")
 ml_model <- readRDS("../models/rf_model.rds")
 
 # 2.    DEFINE WEB APP UI
-ui <- fluidPage(
-    titlePanel("Soccer Player Market Value Prediction Tool"),
-    sidebarLayout(
-        sidebarPanel(
-            numericInput("age", "Age (in years):", min = 1, max = 100, value = 28),
-            numericInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
-            numericInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
-            numericInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
-            numericInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
-            numericInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
-            numericInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89),
-            numericInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
-            numericInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
-            numericInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
-            numericInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
-        ),
-        mainPanel(
-           valueBoxOutput("marketvalue_box"),
-           plotOutput("barplot")
+ui <- dashboardPage(
+    dashboardHeader(
+        title = "Soccer Player Market Value Prediction Tool"
+    ),
+    dashboardSidebar(
+        sidebarMenu(
+            id = "id_sidebar",
+            conditionalPanel(
+                numericInput("age", "Age (in years):", min = 1, max = 100, value = 28),
+                numericInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
+                numericInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
+                numericInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
+                numericInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
+                numericInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
+                numericInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89),
+                numericInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
+                numericInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
+                numericInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
+                numericInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
+            )
+        )
+    ),
+    dashboardBody(
+        fluidRow(
+            box(valueBoxOutput("marketvalue_box")),
+            box(plotOutput("barplot"))
         )
     )
 )
+
+# ui <- fluidPage(
+#     titlePanel("Soccer Player Market Value Prediction Tool"),
+#     sidebarLayout(
+#         sidebarPanel(
+#             numericInput("age", "Age (in years):", min = 1, max = 100, value = 28),
+#             numericInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
+#             numericInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2),
+#             numericInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
+#             numericInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
+#             numericInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
+#             numericInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89),
+#             numericInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
+#             numericInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
+#             numericInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
+#             numericInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
+#         ),
+#         mainPanel(
+#            valueBoxOutput("marketvalue_box"),
+#            plotOutput("barplot")
+#         )
+#     )
+# )
 
 # 3.    DEFINE WEB APP SERVER
 server <- function(input, output) {

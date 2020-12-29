@@ -1,5 +1,7 @@
+library(caret)
+
 # 1. DATASOURCING & CLEANING
-players_21  <- read.csv("data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")
+players_21  <- read.csv("../data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")
 nums        <- unlist(lapply(players_21, is.numeric))  
 tmp         <- players_21[,nums]
 cols        <- c("value_eur", 
