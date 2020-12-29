@@ -10,6 +10,7 @@ library(randomForest)
 library(e1071)
 library(doParallel)
 library(ranger)
+library(ggplot2)
 set.seed(80085)
 registerDoParallel(makePSOCKcluster(2))
 
