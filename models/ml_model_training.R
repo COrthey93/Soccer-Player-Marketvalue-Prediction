@@ -6,7 +6,10 @@ library(doParallel)
 library(ranger)
 library(ggplot2)
 set.seed(80085)
-#registerDoParallel(makePSOCKcluster(8)) # CAUTION with this line! Number of cores used may not be sufficient for your PC!
+registerDoParallel(makePSOCKcluster(8)) # CAUTION with this line! Number of cores used may not be sufficient for your PC!
+
+# 0.  IDENTIFY VARIABLES USED FOR MODEL BUILDING
+
 
 # 1.  LINEAR REGRESSION MODELS
 lm.1        = train(value_eur ~ ., data = train, method = "lm", trControl = control, metric = metric_lm)
