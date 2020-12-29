@@ -45,7 +45,7 @@ ui <- fluidPage(
         column(
             h3("Predicted Player Market Values"),
             width = 4,
-            valueBoxOutput("marketvalue_box")  
+            valueBoxOutput("marketvalue_box")
         )
     ),
     fluidRow(
@@ -59,7 +59,7 @@ ui <- fluidPage(
 
 # 3.    DEFINE WEB APP SERVER
 server <- function(input, output) {
-
+    
     boxplot_dataframe <- reactive({
         data.frame(metric = c("age", "potential", "international_reputation", "overall", "skill_moves", "pace", "shooting", "passing", "dribbling", "defending", "physic"),
                    value = as.integer(c(input$age, input$potential, input$international_reputation, input$overall, input$skill_moves, input$pace, input$shooting, input$passing, input$dribbling, input$defending, input$physic)))
@@ -82,7 +82,7 @@ server <- function(input, output) {
     output$marketvalue_box <- renderValueBox({
         df <- prediction_dataframe()
         df['market_value_prediction'] <- predict(ml_model, df)
-        
+
         valueBox(value = paste0(prettyNum(round(df$market_value_prediction,2), big.mark = ","), "\u20AC"),
                  subtitle = "Predicted Player Market Value")
     })
