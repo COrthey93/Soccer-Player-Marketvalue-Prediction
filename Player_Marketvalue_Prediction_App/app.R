@@ -1,9 +1,17 @@
+# WEB APP LIBRARIES
 library(shiny)
+library(ggplot2)
 library(shinydashboard)
 library(fmsb)
 
+# 0.    SOURCE FILES 
+# 0.1   DATA PREPARATION
+source("../data/data_preparation.R")
+
+# 1.    IMPORT TRAINED ML MODELS
 ml_model <- readRDS("../models/rf_model.rds")
 
+# 2.    DEFINE WEB APP UI
 ui <- fluidPage(
     titlePanel("Soccer Player Market Value Prediction Tool"),
     sidebarLayout(
@@ -27,6 +35,7 @@ ui <- fluidPage(
     )
 )
 
+# 3.    DEFINE WEB APP SERVER
 server <- function(input, output) {
 
     boxplot_dataframe <- reactive({
@@ -66,4 +75,5 @@ server <- function(input, output) {
     }) 
 }
 
+# 4.    RUN WEB APP
 shinyApp(ui = ui, server = server)
