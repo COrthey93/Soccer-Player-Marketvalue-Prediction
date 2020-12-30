@@ -1,20 +1,31 @@
-library(caret)
+# ML MODEL LIBRARIES
 library(dplyr)
+library(caret)
+library(randomForest)
+library(e1071)
+library(doParallel)
+library(ranger)
+library(ggplot2)
+set.seed(80085)
+registerDoParallel(makePSOCKcluster(1))
 
 # 1. DATASOURCING & CLEANING
 players_21  <- read.csv("data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")
 players_21  <- players_21[players_21$player_positions != "GK",]
 players_21  <- players_21[,colSums(is.na(players_21))==0]
 nums        <- unlist(lapply(players_21, is.numeric))  
+drop        <- c("overall")
 tmp         <- players_21[,nums]
+tmp         <- players_21[,!names(tmp) %in% drop]
+
 
 # cor_mat     <- cor(tmp)
 # cor_mat     <- round(cor_mat,2)
 # high_cor    <- caret::findCorrelation(cor_mat, cutoff = 0.8) #what does the output tell me???? how to proceed?
 
-control     = trainControl(method = "cv", number = 10)
-feature_selection_model <- train(value_eur~., data=tmp, method="ranger", preProcess="scale", trControl=control, importance = "impurity")
-saveRDS(object = feature_selection_model, file = "models/fs_model.rds")
+#control     = trainControl(method = "cv", number = 10)
+feature_selection_model <- train(value_eur~., data=tmp, method="ranger", preProcess="scale", importance = "impurity")
+#saveRDS(object = feature_selection_model, file = "models/fs_model.rds")
 importance <- varImp(feature_selection_model, scale=FALSE)
 
 # cols        <- c("value_eur", 
