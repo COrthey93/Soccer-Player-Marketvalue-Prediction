@@ -7,12 +7,13 @@ library(ggplot2)
 library(caret)
 library(e1071)
 library(doParallel)
-registerDoParallel(makePSOCKcluster(6))
+registerDoParallel(makePSOCKcluster(10))
 
 # ML MODEL LIBRARIES
 library(ranger)
 library(glmnet)
 library(neuralnet)
+
 
 # 1.  DECISION TREE MODELS
 metric_rf   <- "RMSE"
@@ -32,8 +33,7 @@ nn.1        <- caret::train(value_eur ~ .,
                             tuneGrid = tune.grid.nn,
                             linear.output = TRUE,
                             lifesign = "full",
-                            threshold = 0.5,
-                            stepmax = 1e6)
+                            threshold = 0.5)
 
 # 3  MODEL SAVING
 saveRDS(object = fs.1, file = "models/fs_model.rds")  # Saving the Feature Selection Model (glmnet)
