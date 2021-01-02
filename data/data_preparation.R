@@ -1,40 +1,50 @@
-library(caret)
+# GENERAL LIBRARIES
+set.seed(80085)
 library(dplyr)
+library(ggplot2)
+
+# ML FRAMEWORK LIBRARIES
+library(caret)
+library(e1071)
+#library(doParallel)
+#registerDoParallel(makePSOCKcluster(4))
+
+# ML MODEL LIBRARIES
+library(ranger)
+library(glmnet)
 
 # 1. DATASOURCING & CLEANING
-players_21  <- read.csv("data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")
-players_21  <- players_21[players_21$player_positions != "GK",]
-players_21  <- players_21[,colSums(is.na(players_21))==0]
-nums        <- unlist(lapply(players_21, is.numeric))  
-tmp         <- players_21[,nums]
+players_21  <- read.csv("../data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8") # Reading the initial data 
+players_21  <- players_21[players_21$player_positions != "GK",]                              # Deleting all Goalkeepers from the dataframe
+players_21  <- players_21[,colSums(is.na(players_21))==0]                                    # Substituting all NAs by Zeros
+players_21  <- players_21[players_21$value_eur != 0,]                                        # Deleting all 0 values from the market value
+nums        <- unlist(lapply(players_21, is.numeric))                                        # Identifying all numeric columns
+tmp         <- players_21[,nums]                                                             # Subsetting the data to only numeric columns
+drop        <- c("overall", "sofifa_id")                                                     # Deleting Overall (consists of single abilities) and ID (as primary key unrelated to data)
+tmp         <- tmp[,!names(tmp) %in% drop]                                                   # "
+pp_values   <- preProcess(tmp, method = c("center", "scale"))
+tmp         <- predict(pp_values, tmp)
 
-# cor_mat     <- cor(tmp)
-# cor_mat     <- round(cor_mat,2)
-# high_cor    <- caret::findCorrelation(cor_mat, cutoff = 0.8) #what does the output tell me???? how to proceed?
+#saveRDS(tmp, file = "../Player_Marketvalue_Prediction_App/ml_data.rds")
 
-control     = trainControl(method = "cv", number = 10)
-feature_selection_model <- train(value_eur~., data=tmp, method="ranger", preProcess="scale", trControl=control, importance = "impurity")
-saveRDS(object = feature_selection_model, file = "models/fs_model.rds")
-importance <- varImp(feature_selection_model, scale=FALSE)
+control_fs              <- trainControl(method = "cv", number = 10)
+feature_selection_model <- train(value_eur~., data=tmp, method="glmnet", trControl = control_fs)
+importance              <- varImp(feature_selection_model)
+importance              <- data.frame(importance[1])
+cols                    <- rownames(importance)[order(importance$Overall, decreasing = T)[1:9]]
+cols                    <- append(cols, "value_eur")
 
-# cols        <- c("value_eur", 
-#                  "age", "potential", "international_reputation", 
-#                  "overall", "skill_moves", "pace", "shooting", "passing", "dribbling", "defending", "physic")
-# df          <- tmp[cols]
+df                      <- tmp[cols]
+
+train_Index             <- createDataPartition(df$value_eur, p = .8,
+                                               list = F,
+                                               times = 1)
+train                   <- df[train_Index,]
+test                    <- df[-train_Index,]
+
+#apply(train,2,function(x) sum(is.na(x))) -> no NA values present in the train dataset. Good!
 
 # 2. BOXPLOTS
-for(i in 1:ncol(df)) {
-  boxplot(df[,i], main=names(df)[i])
-}
-
-# 3. TRAIN & TEST SPLIT
-train_Index = createDataPartition(df$international_reputation, p = .8,
-                                  list = F,
-                                  times = 1)
-train       = df[train_Index,]
-test        = df[-train_Index,]
-
-# 4. CONTROL METRIC DEFINITION
-control     = trainControl(method = "cv", number = 10)
-metric_lm   = "Rsquared"
-metric_rf   = "RMSE"
+# for(i in 1:ncol(df)) {
+#   boxplot(df[,i], main=names(df)[i])
+# }
