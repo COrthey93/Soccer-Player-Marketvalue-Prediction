@@ -1,5 +1,5 @@
 # GENERAL LIBRARIES
-#set.seed(80085)
+set.seed(80085)
 library(dplyr)
 library(ggplot2)
 
@@ -13,19 +13,22 @@ registerDoParallel(makePSOCKcluster(10))
 library(ranger)
 library(glmnet)
 library(neuralnet)
-
+library(keras)
 
 # 1.  DECISION TREE MODELS
-metric_rf   <- "RMSE"
-control_rf  <- trainControl(method = "cv", number = 10, savePredictions = "all")
-rf.1        <- train(value_eur ~ ., data = train, method = "ranger", trControl = control, metric = metric_rf)
+metric_rf    <- "RMSE"
+control_rf   <- trainControl(method = "cv", number = 10, savePredictions = "all")
+rf.1         <- train(value_eur ~ ., data = train, method = "ranger", trControl = control, metric = metric_rf)
 
-# 2.  NEURAL NETWORK MODEL
-metric_nn   <- "RMSE"
-control_nn  <- trainControl(method = "cv", number = 2, savePredictions = "all")
+# 2.  NEURAL NETWORK MODEL (KERAS GPU)
+
+
+# 2.  NEURAL NETWORK MODEL (MULTICORE CPU)
+metric_nn    <- "RMSE"
+control_nn   <- trainControl(method = "cv", number = 2, savePredictions = "all")
 tune.grid.nn <- expand.grid(layer1 = 512, layer2 = 256, layer3 = 256)
 
-nn.1        <- caret::train(value_eur ~ .,
+nn.1         <- caret::train(value_eur ~ .,
                             data = train,
                             method = "neuralnet",
                             trControl = control_nn,
@@ -52,10 +55,10 @@ summary(results)
 # 5.  TEST SET PREDICTION OF CHOSEN MODEL (-> ACCURACY CALCULATION)
 predictions = predict(rf.1, test)
 
-result <- test[,2:ncol(test)]
-result['value_eur'] <- test$value_eur
-result['prediction'] <- predictions
-result['deviation'] <- result$value_eur - result$prediction
+result                      <- test[,1:ncol(test)-1]
+result['value_eur']         <- test$value_eur
+result['prediction']        <- predictions
+result['deviation']         <- result$value_eur - result$prediction
 result['percent_deviation'] <- (result$deviation / result$value_eur)*100
 
 hist(result$percent_deviation)
