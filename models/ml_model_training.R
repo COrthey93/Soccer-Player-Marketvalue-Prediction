@@ -1,13 +1,13 @@
 # GENERAL LIBRARIES
-set.seed(80085)
+set.seed(123)
 library(dplyr)
 library(ggplot2)
 
 # ML FRAMEWORK LIBRARIES
 library(caret)
 library(e1071)
-library(doParallel)
-registerDoParallel(makePSOCKcluster(10))
+# library(doParallel)
+# registerDoParallel(makePSOCKcluster(10))
 
 # ML MODEL LIBRARIES
 library(ranger)
@@ -39,9 +39,9 @@ nn.1         <- caret::train(value_eur ~ .,
                             threshold = 0.5)
 
 # 3  MODEL SAVING
-saveRDS(object = fs.1, file = "models/fs_model.rds")  # Saving the Feature Selection Model (glmnet)
-saveRDS(object = rf.1, file = "models/rf_model.rds")  # Saving the Random Forest Model (ranger)
-saveRDS(object = nn.1, file = "models/nn_model.rds") # Saving the Neural Network Model (neuralnet)
+# saveRDS(object = fs.1, file = "models/fs_model.rds")  # Saving the Feature Selection Model (glmnet)
+# saveRDS(object = rf.1, file = "models/rf_model.rds")  # Saving the Random Forest Model (ranger)
+# saveRDS(object = nn.1, file = "models/nn_model.rds") # Saving the Neural Network Model (neuralnet)
 
 # 4.  MODEL COMPARISON
 results     = resamples(
