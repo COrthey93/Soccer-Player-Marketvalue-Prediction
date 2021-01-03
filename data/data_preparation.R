@@ -12,7 +12,7 @@ library(ranger)
 library(glmnet)
 
 # 1. DATASOURCING & CLEANING
-players_21  <- read.csv("../data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")    # Reading the initial data 
+players_21  <- read.csv("data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")    # Reading the initial data 
 players_21  <- players_21[players_21$player_positions != "GK",]                              # Deleting all Goalkeepers from the dataframe
 players_21  <- players_21[,colSums(is.na(players_21))==0]                                    # Substituting all NAs by Zeros
 players_21  <- players_21[players_21$value_eur != 0,]                                        # Deleting all 0 values from the market value
