@@ -22,14 +22,24 @@ drop        <- c("overall", "sofifa_id")                                        
 data        <- data[,!names(data) %in% drop] 
 
 # 2.  PRE-PROCESSING
+normalize   <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
 
+denormalize <- function(x,minval,maxval) {
+  x*(maxval-minval) + minval
+}
+
+minvec      <- sapply(data,min)
+maxvec      <- sapply(data,max)
+data.norm   <- as.data.frame(lapply(data, normalize))
 
 # 3.  DATA SPLITTING
-train_Index <- createDataPartition(data$value_eur, p = .8,
+train_Index <- createDataPartition(data.norm$value_eur, p = .8,
                                    list = F,
                                    times = 1)
-train       <- data[train_Index,]
-test        <- data[-train_Index,]
+train       <- data.norm[train_Index,]
+test        <- data.norm[-train_Index,]
 
 # 4.  FEATURE SELECTION
 control_fs  <- trainControl(method = "cv", number = 10)
@@ -39,7 +49,7 @@ importance  <- data.frame(importance[1])
 cols        <- rownames(importance)[order(importance$Overall, decreasing = T)[1:9]]
 cols        <- append(cols, "value_eur")
 
-ml_data     <- data[cols]
+ml_data     <- data.norm[cols]
 
 # 2. BOXPLOTS
 for(i in 1:ncol(ml_data)) {
