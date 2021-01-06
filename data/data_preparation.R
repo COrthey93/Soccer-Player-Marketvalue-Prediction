@@ -48,6 +48,9 @@ maxvec         <- sapply(ml_data,max)
 ml_data.norm   <- as.data.frame(Map(normalize, ml_data, minvec, maxvec))
 ml_data.denorm <- ml_data
 
+# saveRDS(ml_data.norm, "data/ml_data_norm.rds")
+# saveRDS(ml_data.denorm, "data/ml_data_denorm.rds")
+
 saveRDS(ml_data.norm, "../data/ml_data_norm.rds")
 saveRDS(ml_data.denorm, "../data/ml_data_denorm.rds")
 
