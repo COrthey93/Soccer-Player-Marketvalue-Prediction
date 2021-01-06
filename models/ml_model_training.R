@@ -14,29 +14,38 @@ library(ranger)
 library(glmnet)
 library(neuralnet)
 
+ml_data.norm <- readRDS("data/ml_data_norm.rds")
+ml_data.denorm <- readRDS("data/ml_data_denorm.rds")
+
+# 0.  DATA SPLITTING
+train_Index <- createDataPartition(ml_data.norm$value_eur, p = .8,
+                                   list = F,
+                                   times = 1)
+train       <- ml_data.norm[train_Index,]
+test        <- ml_data.norm[-train_Index,]
+
 # 1.  LINEAR MODEL
 control_lm   <- trainControl(method = "cv", number = 5, savePredictions = "all")
-lm.1         <- train(value_eur ~ ., data = ml_data, method = "lm", trControl = control_lm)
+lm.1         <- train(value_eur ~ ., data = train, method = "lm", trControl = control_lm)
 
 # 2.  DECISION TREE MODELS
 metric_rf    <- "RMSE"
 control_rf   <- trainControl(method = "cv", number = 5, savePredictions = "all")
-rf.1         <- train(value_eur ~ ., data = ml_data, method = "ranger", trControl = control_rf, metric = metric_rf)
 
 # 3.  NEURAL NETWORK MODEL (MULTICORE CPU)
 metric_nn    <- "RMSE"
 control_nn   <- trainControl(method = "cv", number = 5, savePredictions = "all")
-tune.grid.nn <- expand.grid(layer1 = 64, layer2 = 32, layer3 = 32)
+tune.grid.nn <- expand.grid(layer1 = 32, layer2 = 16, layer3 = 16)
 
 nn.1         <- caret::train(value_eur ~ .,
-                            data = ml_data,
+                            data = train,
                             method = "neuralnet",
                             trControl = control_nn,
                             metric = metric_nn,
                             tuneGrid = tune.grid.nn,
                             linear.output = TRUE,
                             lifesign = "full",
-                            threshold = 0.5
+                            threshold = 0.01
                             )
 
 # 4.  MODEL SAVING
