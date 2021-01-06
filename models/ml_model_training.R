@@ -6,46 +6,49 @@ library(ggplot2)
 # ML FRAMEWORK LIBRARIES
 library(caret)
 library(e1071)
-# library(doParallel)
-# registerDoParallel(makePSOCKcluster(10))
+library(doParallel)
+registerDoParallel(makePSOCKcluster(parallel::detectCores()-2))
 
 # ML MODEL LIBRARIES
 library(ranger)
 library(glmnet)
 library(neuralnet)
-library(keras)
 
-# 1.  DECISION TREE MODELS
+# 1.  LINEAR MODEL
+control_lm   <- trainControl(method = "cv", number = 5, savePredictions = "all")
+lm.1         <- train(value_eur ~ ., data = ml_data, method = "lm", trControl = control_lm)
+
+# 2.  DECISION TREE MODELS
 metric_rf    <- "RMSE"
-control_rf   <- trainControl(method = "cv", number = 10, savePredictions = "all")
-rf.1         <- train(value_eur ~ ., data = train, method = "ranger", trControl = control, metric = metric_rf)
+control_rf   <- trainControl(method = "cv", number = 5, savePredictions = "all")
+rf.1         <- train(value_eur ~ ., data = ml_data, method = "ranger", trControl = control_rf, metric = metric_rf)
 
-# 2.  NEURAL NETWORK MODEL (KERAS GPU)
-
-
-# 2.  NEURAL NETWORK MODEL (MULTICORE CPU)
+# 3.  NEURAL NETWORK MODEL (MULTICORE CPU)
 metric_nn    <- "RMSE"
-control_nn   <- trainControl(method = "cv", number = 2, savePredictions = "all")
-tune.grid.nn <- expand.grid(layer1 = 512, layer2 = 256, layer3 = 256)
+control_nn   <- trainControl(method = "cv", number = 5, savePredictions = "all")
+tune.grid.nn <- expand.grid(layer1 = 64, layer2 = 32, layer3 = 32)
 
 nn.1         <- caret::train(value_eur ~ .,
-                            data = train,
+                            data = ml_data,
                             method = "neuralnet",
                             trControl = control_nn,
                             metric = metric_nn,
                             tuneGrid = tune.grid.nn,
                             linear.output = TRUE,
                             lifesign = "full",
-                            threshold = 0.5)
+                            threshold = 0.5
+                            )
 
-# 3  MODEL SAVING
-# saveRDS(object = fs.1, file = "models/fs_model.rds")  # Saving the Feature Selection Model (glmnet)
-# saveRDS(object = rf.1, file = "models/rf_model.rds")  # Saving the Random Forest Model (ranger)
-# saveRDS(object = nn.1, file = "models/nn_model.rds") # Saving the Neural Network Model (neuralnet)
+# 4.  MODEL SAVING
+saveRDS(object = fs.1, file = "models/fs_model.rds")  # Saving the Feature Selection Model (glmnet)
+saveRDS(object = lm.1, file = "models/lm_model.rds")  # Saving the Linear Model (lm)
+saveRDS(object = rf.1, file = "models/rf_model.rds")  # Saving the Random Forest Model (ranger)
+saveRDS(object = nn.1, file = "models/nn_model.rds")  # Saving the Neural Network Model (neuralnet)
 
-# 4.  MODEL COMPARISON
+# 5.  MODEL COMPARISON
 results     = resamples(
   list(
+    'Linear Model' = lm.1,
     'Random Forest' = rf.1,
     'Neural Network' = nn.1
   )
@@ -53,12 +56,19 @@ results     = resamples(
 summary(results)
 
 # 5.  TEST SET PREDICTION OF CHOSEN MODEL (-> ACCURACY CALCULATION)
-predictions = predict(rf.1, test)
+prediction_df <- function(ml_model = rf.1){
+  df = test
+  df$prediction = predict(ml_model, df)
+  df$abs_deviation = abs(df$value_eur - df$prediction)
+  return(df)
+}
 
-result                      <- test[,1:ncol(test)-1]
-result['value_eur']         <- test$value_eur
-result['prediction']        <- predictions
-result['deviation']         <- result$value_eur - result$prediction
-result['percent_deviation'] <- (result$deviation / result$value_eur)*100
+prediction_df_lm <- prediction_df(ml_model = lm.1)
+prediction_df_rf <- prediction_df(ml_model = rf.1)
+prediction_df_nn <- prediction_df(ml_model = nn.1)
 
-hist(result$percent_deviation)
+mean(prediction_df_lm$abs_deviation)
+mean(prediction_df_rf$abs_deviation)
+mean(prediction_df_nn$abs_deviation)
+
+# --> The Random Forest Model is the best Model regarding to the Mean Absolute Deviation
