@@ -6,8 +6,7 @@ library(fmsb)
 library(shinythemes)
 
 # 0.    SOURCE FILES 
-# 0.1   DATA PREPARATION
-source("../data/data_preparation.R")
+#source("../data/data_preparation.R")
 
 # 1.    IMPORT TRAINED ML MODELS
 ml_model <- readRDS("../models/rf_model.rds")
@@ -23,23 +22,21 @@ ui <- fluidPage(
             width = 8,
             column(
                 width = 4,
-                sliderInput("age", "Age (in years):", min = 1, max = 100, value = 28),
-                sliderInput("potential", "Development Potential (0-100):", min = 0, max = 100, value = 78),
-                sliderInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 2)
+                sliderInput("wage_eur", "Player Wage (in €):", min = 500, max = 560000, value = 100000, step = 1000),
+                sliderInput("movement_reactions", "Movement Reactions (in %):", min = 0, max = 100, value = 85, step = 1),
+                sliderInput("potential", "Potential (in %):", min = 0, max = 100, value = 75, step = 1)
             ),
             column(
                 width = 4,
-                sliderInput("overall", "Overall Skill Level (0-100):", min = 0, max = 100, value = 80),
-                sliderInput("skill_moves", "Special Move Ability (0-5):", min = 0, max = 5, value = 4),
-                sliderInput("pace", "Pace in Running (0-100):", min = 0, max = 100, value = 70),
-                sliderInput("shooting", "Shooting Ability (0-100):", min = 0, max = 100, value = 89)
+                sliderInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 4, step = 1),
+                sliderInput("age", "Age of the Player (in years):", min = 0, max = 100, value = 22, step = 1),
+                sliderInput("attacking_finishing", "Finishing Rate (in %):", min = 0, max = 100, value = 81, step = 1)
             ),
             column(
                 width = 4,
-                sliderInput("passing", "Passing Ability (0-100):", min = 0, max = 100, value = 30),
-                sliderInput("dribbling", "Dribbling Ability (0-100):", min = 0, max = 100, value = 81),
-                sliderInput("defending", "Defensive Ability (0-100):", min = 0, max = 100, value = 20),
-                sliderInput("physic", "Physical Ability (0-100):", min = 0, max = 100, value = 20)
+                sliderInput("power_stamina", "Stamina (in %):", min = 0, max = 100, value = 40, step = 1),
+                sliderInput("movement_agility", "Movement Agility (in %):", min = 0, max = 100, value = 80, step = 1),
+                sliderInput("attacking_short_passing", "Short Passing Rate (in %):", min = 0, max = 100, value = 75, step = 1)
             ),
         ),
         column(
@@ -61,22 +58,33 @@ ui <- fluidPage(
 server <- function(input, output) {
     
     boxplot_dataframe <- reactive({
-        data.frame(metric = c("age", "potential", "international_reputation", "overall", "skill_moves", "pace", "shooting", "passing", "dribbling", "defending", "physic"),
-                   value = as.integer(c(input$age, input$potential, input$international_reputation, input$overall, input$skill_moves, input$pace, input$shooting, input$passing, input$dribbling, input$defending, input$physic)))
+        data.frame(metric = c("Wage", "Movement Reactions", "Potential", 
+                              "International Reputation", "Age", "Finishing Rate", "Stamina", "Movement Agility", 
+                              "Short Passing Rate"),
+                   value = as.integer(c(input$wage_eur, 
+                                        input$movement_reactions, 
+                                        input$potential, 
+                                        input$international_reputation, 
+                                        input$age, 
+                                        input$attacking_finishing, 
+                                        input$power_stamina, 
+                                        input$movement_agility, 
+                                        input$attacking_short_passing)
+                                      )
+                   )
     }) 
     
     prediction_dataframe <- reactive({
-        data.frame(age = as.integer(req(input$age)), 
-                   potential = as.integer(req(input$potential)), 
-                   international_reputation = as.integer(req(input$international_reputation)),
-                   overall = as.integer(req(input$overall)), 
-                   skill_moves = as.integer(req(input$skill_moves)), 
-                   pace = as.integer(req(input$pace)), 
-                   shooting = as.integer(req(input$shooting)),
-                   passing = as.integer(req(input$passing)), 
-                   dribbling = as.integer(req(input$dribbling)), 
-                   defending = as.integer(req(input$defending)), 
-                   physic = as.integer(req(input$physic)))
+        data.frame(wage_eur                 = as.integer(req(input$wage_eur)), 
+                   movement_reactions       = as.integer(req(input$movement_reactions)), 
+                   potential                = as.integer(req(input$potential)),
+                   international_reputation = as.integer(req(input$international_reputation)), 
+                   age                      = as.integer(req(input$age)), 
+                   attacking_finishing      = as.integer(req(input$attacking_finishing)), 
+                   power_stamina            = as.integer(req(input$power_stamina)),
+                   movement_agility         = as.integer(req(input$movement_agility)), 
+                   attacking_short_passing  = as.integer(req(input$attacking_short_passing))
+                   )
     })
     
     output$marketvalue_box <- renderValueBox({
