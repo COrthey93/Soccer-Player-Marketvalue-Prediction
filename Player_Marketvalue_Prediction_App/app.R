@@ -11,7 +11,7 @@ source("../data/data_preparation.R") #for App
 
 # 1.    IMPORT TRAINED ML MODELS
 #ml_model <- readRDS("models/rf_model.rds") #for Script 
-ml_model <- readRDS("../models/nn_model.rds") #for App
+ml_model <- readRDS("../models/rf_model.rds") #for App
 
 # 2.    DEFINE WEB APP UI
 ui <- fluidPage(
