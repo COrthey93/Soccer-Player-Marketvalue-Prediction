@@ -13,9 +13,8 @@ library(glmnet)
 
 
 # 1.  DATASOURCING & CLEANING
-
 players_21  <- read.csv("../data/players_21.csv", stringsAsFactors = TRUE, encoding = "UTF-8")
-#players_21  <- read.csv("data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")    # Reading the initial data 
+#players_21  <- read.csv("data/players_21.csv", stringsAsFactors=TRUE, encoding = "UTF-8")   # Reading the initial data 
 
 players_21  <- players_21[players_21$player_positions != "GK",]                              # Deleting all Goalkeepers from the dataframe
 players_21  <- players_21[,colSums(is.na(players_21))==0]                                    # Substituting all NAs by Zeros
@@ -54,7 +53,6 @@ ml_data.denorm <- ml_data
 saveRDS(ml_data.norm, "../data/ml_data_norm.rds")
 saveRDS(ml_data.denorm, "../data/ml_data_denorm.rds")
 
-# # 4. BOXPLOTS
-# for(i in 1:ncol(ml_data)) {
-#   boxplot(df[,i], main=names(df)[i])
-# }
+hist(ml_data$potential, main = "Histogram of Player Potential", xlab = "Potential (%)", ylab = "Frequency")
+hist(ml_data$age, main = "Histogram of Player Age", xlab = "Age (Years)", ylab = "Frequency")
+hist(ml_data$value_eur/1000000, main = "Histogram of Player Market Value", xlab = "Market Value (in Mio. EUR)", ylab = "Frequency")

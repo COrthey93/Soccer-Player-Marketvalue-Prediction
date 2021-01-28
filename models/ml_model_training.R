@@ -7,7 +7,7 @@ library(ggplot2)
 library(caret)
 library(e1071)
 library(doParallel)
-registerDoParallel(makePSOCKcluster(parallel::detectCores()-2))
+registerDoParallel(makePSOCKcluster(parallel::detectCores()-4))
 
 # ML MODEL LIBRARIES
 library(ranger)
@@ -31,6 +31,7 @@ lm.1         <- train(value_eur ~ ., data = train, method = "lm", trControl = co
 # 2.  DECISION TREE MODELS
 metric_rf    <- "RMSE"
 control_rf   <- trainControl(method = "cv", number = 5, savePredictions = "all")
+rf.1         <- caret::train(value_eur ~ ., data = train, method = "ranger", trControl = control_rf, metric = metric_rf)
 
 # 3.  NEURAL NETWORK MODEL (MULTICORE CPU)
 metric_nn    <- "RMSE"
@@ -62,13 +63,16 @@ results     = resamples(
     'Neural Network' = nn.1
   )
 )
-summary(results)
+comp_tab <- summary(results)
+comp_tab <- as.data.frame(comp_tab)
+# -> stargazer latex table?
 
 # 5.  TEST SET PREDICTION OF CHOSEN MODEL (-> ACCURACY CALCULATION)
 prediction_df <- function(ml_model = rf.1){
   df = test
   df$prediction = predict(ml_model, df)
-  df$abs_deviation = abs(df$value_eur - df$prediction)
+  df$deviation = df$value_eur - df$prediction
+  df$deviation_sqrt = df$deviation^2
   return(df)
 }
 
@@ -76,8 +80,14 @@ prediction_df_lm <- prediction_df(ml_model = lm.1)
 prediction_df_rf <- prediction_df(ml_model = rf.1)
 prediction_df_nn <- prediction_df(ml_model = nn.1)
 
-mean(prediction_df_lm$abs_deviation)
-mean(prediction_df_rf$abs_deviation)
-mean(prediction_df_nn$abs_deviation)
+rmse_lm <- sqrt(mean(prediction_df_lm$deviation_sqrt, na.rm = T))
+rmse_rf <- sqrt(mean(prediction_df_rf$deviation_sqrt, na.rm = T))
+rmse_nn <- sqrt(mean(prediction_df_nn$deviation_sqrt, na.rm = T))
 
-# --> The Random Forest Model is the best Model regarding to the Mean Absolute Deviation
+print(c(rmse_lm, rmse_rf, rmse_nn))
+rmse_df <- data.frame('Linear Model' = rmse_lm,
+     'Random Forest' = rmse_rf,
+     'Neural Network' = rmse_nn)
+print(rsme_df)
+
+# --> The Neural Network Model is the best Model regarding to the Root Mean Squared Error

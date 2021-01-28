@@ -14,6 +14,7 @@ source("../data/data_preparation.R") #for App
 ml_model <- readRDS("../models/nn_model.rds") #for App
 
 # 2.    DEFINE WEB APP UI
+# Predefined Player Values from P.Dybala -> Market Value 71,000,000
 ui <- fluidPage(
     theme = shinytheme("united"),
     title = "Soccer Player Market Value Prediction Tool",
@@ -24,9 +25,9 @@ ui <- fluidPage(
             width = 8,
             column(
                 width = 4,
-                sliderInput("age", "Age of the Player (in years):", min = 0, max = 100, value = 26, step = 1),
+                sliderInput("age", "Age of the Player (in years):", min = 12, max = 40, value = 26, step = 1),
                 sliderInput("potential", "Potential (in %):", min = 0, max = 100, value = 89, step = 1),
-                sliderInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 3, step = 1)
+                sliderInput("international_reputation", "International Reputation (1-5):", min = 1, max = 5, value = 3, step = 1)
             ),
             column(
                 width = 4,
@@ -49,9 +50,24 @@ ui <- fluidPage(
     ),
     fluidRow(
         column(
-            h3("Player Attribute Graphic"),
-            width = 12,
-            plotOutput("barplot")   
+            h3("Player Attribute Graphics"),
+            width = 6,
+            plotOutput("barplot_pct")   
+        ),
+        column(
+            br(),
+            width = 2,
+            plotOutput("barplot_age")   
+        ),
+        column(
+            br(),
+            width = 2,
+            plotOutput("barplot_rep")   
+        ),
+        column(
+            br(),
+            width = 2,
+            plotOutput("barplot_wage")   
         )
     )
 )
@@ -59,7 +75,7 @@ ui <- fluidPage(
 # 3.    DEFINE WEB APP SERVER
 server <- function(input, output) {
     
-    boxplot_dataframe <- reactive({
+    barplot_dataframe <- reactive({
         data.frame(metric = c("Age", "Potential", "International Reputation", 
                               "Wage", "Power Stamina", "Finishing Rate", "Short Passing", "Dribbling", 
                               "Movement Reactions"),
@@ -99,10 +115,36 @@ server <- function(input, output) {
                  subtitle = "")
     })
     
-    output$barplot <- renderPlot({
-        df <- boxplot_dataframe()
+    output$barplot_pct <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("Potential", "Power Stamina", "Finishing Rate", "Short Passing", "Dribbling", "Movement Reactions"),]
         ggplot2::ggplot(df, aes(x = metric, y = value)) +
-            geom_bar(stat = "identity", width = 0.4)
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_cartesian(ylim = c(0,100))
+    }) 
+    
+    output$barplot_age <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("Age"),]
+        ggplot2::ggplot(df, aes(x = metric, y = value)) +
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_cartesian(ylim = c(0,39))
+    }) 
+    
+    output$barplot_rep <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("International Reputation"),]
+        ggplot2::ggplot(df, aes(x = metric, y = value)) +
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_cartesian(ylim = c(0,5))
+    }) 
+    
+    output$barplot_wage <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("Wage"),]
+        ggplot2::ggplot(df, aes(x = metric, y = value)) +
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_cartesian(ylim = c(0,560000))
     }) 
 }
 
