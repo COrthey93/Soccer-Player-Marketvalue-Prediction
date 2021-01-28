@@ -4,17 +4,15 @@ library(ggplot2)
 library(shinydashboard)
 library(fmsb)
 library(shinythemes)
+library(scales)
 
 # 0.    SOURCE FILES 
-#source("data/data_preparation.R") #for Script
-source("../data/data_preparation.R") #for App
+source("../data/data_preparation.R")
 
 # 1.    IMPORT TRAINED ML MODELS
-#ml_model <- readRDS("models/rf_model.rds") #for Script 
-ml_model <- readRDS("../models/nn_model.rds") #for App
+ml_model <- readRDS("../models/nn_model.rds")
 
 # 2.    DEFINE WEB APP UI
-# Predefined Player Values from P.Dybala -> Market Value 71,000,000
 ui <- fluidPage(
     theme = shinytheme("united"),
     title = "Soccer Player Market Value Prediction Tool",
@@ -51,23 +49,23 @@ ui <- fluidPage(
     fluidRow(
         column(
             h3("Player Attribute Graphics"),
-            width = 6,
-            plotOutput("barplot_pct")   
-        ),
-        column(
-            br(),
-            width = 2,
-            plotOutput("barplot_age")   
-        ),
-        column(
-            br(),
-            width = 2,
-            plotOutput("barplot_rep")   
-        ),
-        column(
-            br(),
-            width = 2,
-            plotOutput("barplot_wage")   
+            width = 12,
+            column(
+                width = 6,
+                plotOutput("barplot_pct", height = 400)   
+            ),
+            column(
+                width = 2,
+                plotOutput("barplot_age", height = 400)   
+            ),
+            column(
+                width = 2,
+                plotOutput("barplot_rep", height = 400)   
+            ),
+            column(
+                width = 2,
+                plotOutput("barplot_wage", height = 400)   
+            )
         )
     )
 )
@@ -120,7 +118,9 @@ server <- function(input, output) {
         df <- df[df$metric %in% c("Potential", "Power Stamina", "Finishing Rate", "Short Passing", "Dribbling", "Movement Reactions"),]
         ggplot2::ggplot(df, aes(x = metric, y = value)) +
             geom_bar(stat = "identity", width = 0.4) +
-            coord_cartesian(ylim = c(0,100))
+            coord_cartesian(ylim = c(0,100)) +
+            xlab(label = "") +
+            ylab(label = "attribute level (0-100)")
     }) 
     
     output$barplot_age <- renderPlot({
@@ -128,7 +128,9 @@ server <- function(input, output) {
         df <- df[df$metric %in% c("Age"),]
         ggplot2::ggplot(df, aes(x = metric, y = value)) +
             geom_bar(stat = "identity", width = 0.4) +
-            coord_cartesian(ylim = c(0,39))
+            coord_cartesian(ylim = c(0,39)) +
+            xlab(label = "") +
+            ylab(label = "age (in years)")
     }) 
     
     output$barplot_rep <- renderPlot({
@@ -136,7 +138,9 @@ server <- function(input, output) {
         df <- df[df$metric %in% c("International Reputation"),]
         ggplot2::ggplot(df, aes(x = metric, y = value)) +
             geom_bar(stat = "identity", width = 0.4) +
-            coord_cartesian(ylim = c(0,5))
+            coord_cartesian(ylim = c(0,5)) +
+            xlab(label = "") +
+            ylab(label = "reputation level (1-5)")
     }) 
     
     output$barplot_wage <- renderPlot({
@@ -144,7 +148,9 @@ server <- function(input, output) {
         df <- df[df$metric %in% c("Wage"),]
         ggplot2::ggplot(df, aes(x = metric, y = value)) +
             geom_bar(stat = "identity", width = 0.4) +
-            coord_cartesian(ylim = c(0,560000))
+            scale_y_continuous(labels = scales::comma) +    
+            xlab(label = "") +
+            ylab(label = "wage (in EUR)")
     }) 
 }
 

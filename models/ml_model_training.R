@@ -14,8 +14,8 @@ library(ranger)
 library(glmnet)
 library(neuralnet)
 
-ml_data.norm <- readRDS("data/ml_data_norm.rds")
-ml_data.denorm <- readRDS("data/ml_data_denorm.rds")
+ml_data.norm    <- readRDS("data/ml_data_norm.rds")
+ml_data.denorm  <- readRDS("data/ml_data_denorm.rds")
 
 # 0.  DATA SPLITTING
 train_Index <- createDataPartition(ml_data.norm$value_eur, p = .8,
@@ -23,6 +23,9 @@ train_Index <- createDataPartition(ml_data.norm$value_eur, p = .8,
                                    times = 1)
 train       <- ml_data.norm[train_Index,]
 test        <- ml_data.norm[-train_Index,]
+
+saveRDS(train, "models/train.rds")
+saveRDS(test, "models/test.rds")
 
 # 1.  LINEAR MODEL
 control_lm   <- trainControl(method = "cv", number = 5, savePredictions = "all")
@@ -63,9 +66,7 @@ results     = resamples(
     'Neural Network' = nn.1
   )
 )
-comp_tab <- summary(results)
-comp_tab <- as.data.frame(comp_tab)
-# -> stargazer latex table?
+summary(results)
 
 # 5.  TEST SET PREDICTION OF CHOSEN MODEL (-> ACCURACY CALCULATION)
 prediction_df <- function(ml_model = rf.1){
@@ -85,9 +86,10 @@ rmse_rf <- sqrt(mean(prediction_df_rf$deviation_sqrt, na.rm = T))
 rmse_nn <- sqrt(mean(prediction_df_nn$deviation_sqrt, na.rm = T))
 
 print(c(rmse_lm, rmse_rf, rmse_nn))
-rmse_df <- data.frame('Linear Model' = rmse_lm,
+rmse_df <- data.frame(
+     'Linear Model' = rmse_lm,
      'Random Forest' = rmse_rf,
      'Neural Network' = rmse_nn)
-print(rsme_df)
+print(rmse_df)
 
 # --> The Neural Network Model is the best Model regarding to the Root Mean Squared Error
