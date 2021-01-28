@@ -4,14 +4,13 @@ library(ggplot2)
 library(shinydashboard)
 library(fmsb)
 library(shinythemes)
+library(scales)
 
 # 0.    SOURCE FILES 
-#source("data/data_preparation.R") #for Script
-source("../data/data_preparation.R") #for App
+source("../data/data_preparation.R")
 
 # 1.    IMPORT TRAINED ML MODELS
-#ml_model <- readRDS("models/rf_model.rds") #for Script 
-ml_model <- readRDS("../models/rf_model.rds") #for App
+ml_model <- readRDS("../models/nn_model.rds")
 
 # 2.    DEFINE WEB APP UI
 ui <- fluidPage(
@@ -24,9 +23,9 @@ ui <- fluidPage(
             width = 8,
             column(
                 width = 4,
-                sliderInput("age", "Age of the Player (in years):", min = 0, max = 100, value = 26, step = 1),
+                sliderInput("age", "Age of the Player (in years):", min = 12, max = 40, value = 26, step = 1),
                 sliderInput("potential", "Potential (in %):", min = 0, max = 100, value = 89, step = 1),
-                sliderInput("international_reputation", "International Reputation (0-5):", min = 0, max = 5, value = 3, step = 1)
+                sliderInput("international_reputation", "International Reputation (1-5):", min = 1, max = 5, value = 3, step = 1)
             ),
             column(
                 width = 4,
@@ -49,9 +48,24 @@ ui <- fluidPage(
     ),
     fluidRow(
         column(
-            h3("Player Attribute Graphic"),
+            h3("Player Attribute Graphics"),
             width = 12,
-            plotOutput("barplot")   
+            column(
+                width = 6,
+                plotOutput("barplot_pct", height = 400)   
+            ),
+            column(
+                width = 2,
+                plotOutput("barplot_age", height = 400)   
+            ),
+            column(
+                width = 2,
+                plotOutput("barplot_rep", height = 400)   
+            ),
+            column(
+                width = 2,
+                plotOutput("barplot_wage", height = 400)   
+            )
         )
     )
 )
@@ -59,7 +73,7 @@ ui <- fluidPage(
 # 3.    DEFINE WEB APP SERVER
 server <- function(input, output) {
     
-    boxplot_dataframe <- reactive({
+    barplot_dataframe <- reactive({
         data.frame(metric = c("Age", "Potential", "International Reputation", 
                               "Wage", "Power Stamina", "Finishing Rate", "Short Passing", "Dribbling", 
                               "Movement Reactions"),
@@ -94,15 +108,51 @@ server <- function(input, output) {
         df <- normalize(df, minval = minvec, maxval = maxvec)
         df['value_eur'] <- predict(ml_model, df)
         df <- denormalize(df, minval = minvec, maxval = maxvec)
-
-        valueBox(value = paste0(prettyNum(round(df$value_eur,2), big.mark = ","), "\u20AC"),
+        
+        dispval <- if(df$value_eur >= 0){paste0(prettyNum(round(df$value_eur,2), big.mark = ","), "\u20AC")} else {"attribute combination not meaningful"}
+        
+        valueBox(value = dispval,
                  subtitle = "")
     })
     
-    output$barplot <- renderPlot({
-        df <- boxplot_dataframe()
+    output$barplot_pct <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("Potential", "Power Stamina", "Finishing Rate", "Short Passing", "Dribbling", "Movement Reactions"),]
         ggplot2::ggplot(df, aes(x = metric, y = value)) +
-            geom_bar(stat = "identity", width = 0.4)
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_cartesian(ylim = c(0,100)) +
+            xlab(label = "") +
+            ylab(label = "attribute level (0-100)")
+    }) 
+    
+    output$barplot_age <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("Age"),]
+        ggplot2::ggplot(df, aes(x = metric, y = value)) +
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_cartesian(ylim = c(0,39)) +
+            xlab(label = "") +
+            ylab(label = "age (in years)")
+    }) 
+    
+    output$barplot_rep <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("International Reputation"),]
+        ggplot2::ggplot(df, aes(x = metric, y = value)) +
+            geom_bar(stat = "identity", width = 0.4) +
+            coord_cartesian(ylim = c(0,5)) +
+            xlab(label = "") +
+            ylab(label = "reputation level (1-5)")
+    }) 
+    
+    output$barplot_wage <- renderPlot({
+        df <- barplot_dataframe()
+        df <- df[df$metric %in% c("Wage"),]
+        ggplot2::ggplot(df, aes(x = metric, y = value)) +
+            geom_bar(stat = "identity", width = 0.4) +
+            scale_y_continuous(labels = scales::comma) +    
+            xlab(label = "") +
+            ylab(label = "wage (in EUR)")
     }) 
 }
 
