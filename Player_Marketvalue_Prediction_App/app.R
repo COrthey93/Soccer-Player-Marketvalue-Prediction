@@ -108,8 +108,10 @@ server <- function(input, output) {
         df <- normalize(df, minval = minvec, maxval = maxvec)
         df['value_eur'] <- predict(ml_model, df)
         df <- denormalize(df, minval = minvec, maxval = maxvec)
-
-        valueBox(value = paste0(prettyNum(round(df$value_eur,2), big.mark = ","), "\u20AC"),
+        
+        dispval <- if(df$value_eur >= 0){paste0(prettyNum(round(df$value_eur,2), big.mark = ","), "\u20AC")} else {"attribute combination not meaningful"}
+        
+        valueBox(value = dispval,
                  subtitle = "")
     })
     
