@@ -10,19 +10,19 @@ For model training the data on the players from the Electronic Arts Videogame FI
 In general several machine learning algorithms are implemented to predict the market value of a soccer player based on market values present in the video game FIFA. It uses player attributes as defined by the videogame and estimates the parameters of the player market value and these attributes.
 The following models were trained via the caret interface in R:
 1. Linear Model
-```
+```r
 control_lm   <- trainControl(method = "cv", number = 5, savePredictions = "all")
 lm.1         <- train(value_eur ~ ., data = train, method = "lm", trControl = control_lm)
 ```
 2. Random Forest Model
-```
+```r
 metric_rf    <- "RMSE"
 control_rf   <- trainControl(method = "cv", number = 5, savePredictions = "all")
 rf.1         <- caret::train(value_eur ~ ., data = train, method = "ranger", trControl = control_rf, metric = metric_rf)
 ```
 
 3. Artificial Neural Network Model
-```
+```r
 metric_nn    <- "RMSE"
 control_nn   <- trainControl(method = "cv", number = 5, savePredictions = "all")
 tune.grid.nn <- expand.grid(layer1 = 32, layer2 = 16, layer3 = 16)
