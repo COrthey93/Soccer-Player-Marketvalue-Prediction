@@ -9,7 +9,7 @@ In general several machine learning algorithms are implemented to predict the ma
 
 
 ## Data
-For model training the data on the players from the Electronic Arts Videogame FIFA 21 has been used, collected by Stefano Leone and published on [Kaggle.com]([url](https://www.kaggle.com/datasets/stefanoleone992/fifa-21-complete-player-dataset)).
+For model training the data on the players from the Electronic Arts Videogame FIFA 21 has been used, collected by Stefano Leone and published on [Kaggle.com](https://www.kaggle.com/datasets/stefanoleone992/fifa-21-complete-player-dataset).
 
 ## In-Production App (interactive)
 An implementation in R-Shiny allows a quick and easy approach to generate a GUI for the attribute value input. In the following the GUI is presented with some example values for a player:
